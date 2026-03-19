@@ -1,0 +1,20 @@
+require("@nomicfoundation/hardhat-toolbox");
+
+/** @type import('hardhat/config').HardhatUserConfig */
+module.exports = {
+  solidity: "0.8.20",
+  networks: {
+    // Base Mainnet (where Locus operates)
+    "base-mainnet": {
+      url: "https://mainnet.base.org",
+      chainId: 8453,
+      accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : []
+    },
+    // Base Sepolia Testnet
+    "base-sepolia": {
+      url: "https://sepolia.base.org",
+      chainId: 84532,
+      accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : []
+    }
+  }
+};
