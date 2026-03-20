@@ -64,6 +64,7 @@ contract LocusAuthorityPayments {
     }
     
     constructor(address _locusRouter) {
+        require(_locusRouter != address(0), "Invalid locus router address");
         owner = msg.sender;
         locusRouter = _locusRouter;
     }
@@ -78,6 +79,9 @@ contract LocusAuthorityPayments {
         uint256 usdcCreditLimit,
         uint256 duration
     ) external onlyOwner {
+        require(agent != address(0), "Invalid agent address");
+        require(level != AuthorityLevel.REVOKED, "Cannot grant REVOKED");
+        
         AuthorityState storage state = authorities[agent];
         
         state.level = level;
@@ -97,11 +101,19 @@ contract LocusAuthorityPayments {
         address to,
         uint256 amount
     ) external onlyAgentWithExecute returns (bytes32 paymentId) {
+        require(to != address(0), "Invalid to address");
+        
         AuthorityState storage state = authorities[msg.sender];
         
         require(state.usdcSpent + amount <= state.usdcCreditLimit, "Exceeds credit limit");
         
-        paymentId = keccak256(abi.encodePacked(msg.sender, to, amount, block.timestamp, totalPayments));
+        paymentId = keccak256(abi.encode(
+            msg.sender,
+            to,
+            amount,
+            block.timestamp,
+            totalPayments
+        ));
         
         payments[paymentId] = Payment({
             id: paymentId,
@@ -147,6 +159,8 @@ contract LocusAuthorityPayments {
      * @notice Check if agent can make a payment
      */
     function canMakePayment(address agent, uint256 amount) external view returns (bool) {
+        require(agent != address(0), "Invalid agent address");
+        
         AuthorityState storage state = authorities[agent];
         return state.level == AuthorityLevel.EXECUTE 
             && state.isActive 
@@ -157,6 +171,8 @@ contract LocusAuthorityPayments {
      * @notice Get agent's remaining credit
      */
     function getRemainingCredit(address agent) external view returns (uint256) {
+        require(agent != address(0), "Invalid agent address");
+        
         AuthorityState storage state = authorities[agent];
         return state.usdcCreditLimit - state.usdcSpent;
     }
@@ -165,6 +181,7 @@ contract LocusAuthorityPayments {
      * @notice Get payment history for an agent
      */
     function getPaymentHistory(address agent) external view returns (bytes32[] memory) {
+        require(agent != address(0), "Invalid agent address");
         return paymentHistory[agent];
     }
 }
