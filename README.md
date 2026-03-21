@@ -74,10 +74,6 @@ await contract.executePayment(
 );
 ```
 
-## Target Track
-
-**Best Use of Locus** ($3,000) - Use Locus for agent payments on Base
-
 ---
 
 *Authority Ledger + Locus = Real-world agent payments.*
