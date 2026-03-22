@@ -184,4 +184,56 @@ contract LocusAuthorityPayments {
         require(agent != address(0), "Invalid agent address");
         return paymentHistory[agent];
     }
+    
+    /**
+     * @notice Get payment details
+     */
+    function getPaymentDetails(bytes32 paymentId) external view returns (
+        address from,
+        address to,
+        uint256 amount,
+        bytes32 authorityRef,
+        uint256 timestamp,
+        bool executed
+    ) {
+        Payment storage payment = payments[paymentId];
+        require(payment.id == paymentId, "Payment not found");
+        
+        from = payment.from;
+        to = payment.to;
+        amount = payment.amount;
+        authorityRef = payment.authorityRef;
+        timestamp = payment.timestamp;
+        executed = payment.authorityRef != bytes32(0);
+    }
+    
+    /**
+     * @notice Update credit limit for an agent
+     */
+    function updateCreditLimit(address agent, uint256 newLimit) external onlyOwner {
+        require(agent != address(0), "Invalid agent address");
+        require(authorities[agent].isActive, "Agent not active");
+        
+        authorities[agent].usdcCreditLimit = newLimit;
+        emit AuthorityGrantedWithCredit(agent, authorities[agent].level, newLimit);
+    }
+    
+    /**
+     * @notice Revoke authority
+     */
+    function revokeAuthority(address agent) external onlyOwner {
+        require(agent != address(0), "Invalid agent address");
+        
+        AuthorityState storage state = authorities[agent];
+        state.level = AuthorityLevel.REVOKED;
+        state.isActive = false;
+    }
+    
+    /**
+     * @notice Transfer ownership
+     */
+    function transferOwnership(address newOwner) external onlyOwner {
+        require(newOwner != address(0), "Invalid new owner");
+        owner = newOwner;
+    }
 }

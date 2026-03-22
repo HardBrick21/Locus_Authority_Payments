@@ -2,8 +2,8 @@
   "_format": "hh-sol-cache-2",
   "files": {
     "/root/.openclaw/workspace/synthesis/locus-authority-payments/contracts/LocusAuthorityPayments.sol": {
-      "lastModificationDate": 1774017318929,
-      "contentHash": "5bfcfaac5a4f34c58c647886b99f845e",
+      "lastModificationDate": 1774179083896,
+      "contentHash": "0c367024e566446c896ac4f55810075e",
       "sourceName": "contracts/LocusAuthorityPayments.sol",
       "solcConfig": {
         "version": "0.8.20",
