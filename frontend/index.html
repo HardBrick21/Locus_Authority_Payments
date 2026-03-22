@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Locus Authority Payments - Demo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/ethers@6.7.0/dist/ethers.umd.min.js"></script>
+    <style>
+        .gradient-bg { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); }
+        .card { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); }
+    </style>
+</head>
+<body class="gradient-bg min-h-screen text-white">
+    <div class="container mx-auto px-4 py-8">
+        <header class="text-center mb-12">
+            <h1 class="text-4xl font-bold mb-2">🧱 Locus Authority Payments</h1>
+            <p class="text-gray-400">USDC Payments for AI Agents</p>
+            <div class="mt-4 flex justify-center gap-4">
+                <span class="px-3 py-1 rounded-full text-sm bg-green-500/20 text-green-400">Base Mainnet</span>
+            </div>
+        </header>
+
+        <div id="connectionStatus" class="card rounded-xl p-4 mb-8">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div id="statusDot" class="w-3 h-3 rounded-full bg-red-500"></div>
+                    <span id="statusText" class="text-gray-300">Not Connected</span>
+                </div>
+                <button id="connectBtn" onclick="connectWallet()" class="px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg transition">Connect Wallet</button>
+            </div>
+        </div>
+
+        <div class="grid lg:grid-cols-2 gap-8">
+            <div class="card rounded-xl p-6">
+                <h2 class="text-xl font-semibold mb-4">📝 Grant Authority</h2>
+                <div class="space-y-4">
+                    <input type="text" id="agentAddress" placeholder="Agent Address (0x...)" class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2">
+                    <select id="authorityLevel" class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2">
+                        <option value="1">OBSERVE</option>
+                        <option value="2">SUGGEST</option>
+                        <option value="3">EXECUTE</option>
+                    </select>
+                    <input type="number" id="creditLimit" value="1000" placeholder="Credit Limit (USDC)" class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2">
+                    <input type="number" id="duration" value="86400" placeholder="Duration (seconds)" class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2">
+                    <button onclick="grantAuthority()" class="w-full py-2 bg-green-600 hover:bg-green-700 rounded-lg">Grant</button>
+                </div>
+            </div>
+
+            <div class="card rounded-xl p-6">
+                <h2 class="text-xl font-semibold mb-4">💳 Authorize Payment</h2>
+                <div class="space-y-4">
+                    <input type="text" id="toAddress" placeholder="Recipient Address" class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2">
+                    <input type="number" id="paymentAmount" placeholder="Amount (USDC)" class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2">
+                    <button onclick="authorizePayment()" class="w-full py-2 bg-blue-600 hover:bg-blue-700 rounded-lg">Authorize</button>
+                </div>
+            </div>
+
+            <div class="card rounded-xl p-6">
+                <h2 class="text-xl font-semibold mb-4">🔍 Check Credit</h2>
+                <div class="space-y-4">
+                    <input type="text" id="checkAgentAddress" placeholder="Agent Address" class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2">
+                    <button onclick="checkCredit()" class="w-full py-2 bg-purple-600 hover:bg-purple-700 rounded-lg">Check</button>
+                    <div id="creditResult" class="hidden bg-white/5 rounded-lg p-4"></div>
+                </div>
+            </div>
+
+            <div class="card rounded-xl p-6">
+                <h2 class="text-xl font-semibold mb-4">⚠️ Revoke Authority</h2>
+                <div class="space-y-4">
+                    <input type="text" id="revokeAgentAddress" placeholder="Agent Address" class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2">
+                    <button onclick="revokeAuthority()" class="w-full py-2 bg-red-600 hover:bg-red-700 rounded-lg">Revoke</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="card rounded-xl p-6 mt-8">
+            <h2 class="text-xl font-semibold mb-4">📜 Transaction Log</h2>
+            <div id="txLog" class="space-y-2 max-h-64 overflow-y-auto"></div>
+        </div>
+    </div>
+
+    <script>
+        const PAYMENTS_ADDRESS = '0x0000000000000000000000000000000000000000'; // Replace with deployed address
+        const PAYMENTS_ABI = [
+            "function grantAuthorityWithCredit(address agent, uint8 level, uint256 usdcCreditLimit, uint256 duration) external",
+            "function authorizePayment(address to, uint256 amount) external returns (bytes32)",
+            "function getRemainingCredit(address agent) external view returns (uint256)",
+            "function revokeAuthority(address agent) external"
+        ];
+
+        let provider, signer, contract;
+
+        async function connectWallet() {
+            if (typeof window.ethereum === 'undefined') {
+                alert('Please install MetaMask!');
+                return;
+            }
+            try {
+                provider = new ethers.BrowserProvider(window.ethereum);
+                await provider.send('eth_requestAccounts', []);
+                signer = await provider.getSigner();
+                contract = new ethers.Contract(PAYMENTS_ADDRESS, PAYMENTS_ABI, signer);
+                
+                const address = await signer.getAddress();
+                document.getElementById('statusDot').className = 'w-3 h-3 rounded-full bg-green-500 pulse';
+                document.getElementById('statusText').textContent = `Connected: ${address.slice(0,6)}...${address.slice(-4)}`;
+                document.getElementById('connectBtn').textContent = 'Connected';
+                document.getElementById('connectBtn').disabled = true;
+                log('Connected to wallet: ' + address);
+            } catch (err) {
+                alert('Connection failed: ' + err.message);
+            }
+        }
+
+        async function grantAuthority() {
+            if (!contract) return alert('Connect wallet first!');
+            const agent = document.getElementById('agentAddress').value;
+            const level = parseInt(document.getElementById('authorityLevel').value);
+            const creditLimit = parseInt(document.getElementById('creditLimit').value);
+            const duration = parseInt(document.getElementById('duration').value);
+            if (!agent) return alert('Enter agent address!');
+            try {
+                const tx = await contract.grantAuthorityWithCredit(agent, level, creditLimit, duration);
+                log(`Granting level ${level} to ${agent} with ${creditLimit} USDC credit...`);
+                await tx.wait();
+                log(`✅ Authority granted!`);
+            } catch (err) {
+                log(`❌ Error: ${err.message}`);
+            }
+        }
+
+        async function authorizePayment() {
+            if (!contract) return alert('Connect wallet first!');
+            const to = document.getElementById('toAddress').value;
+            const amount = parseInt(document.getElementById('paymentAmount').value);
+            if (!to) return alert('Enter recipient address!');
+            try {
+                const tx = await contract.authorizePayment(to, amount);
+                log(`Authorizing ${amount} USDC payment to ${to}...`);
+                await tx.wait();
+                log(`✅ Payment authorized!`);
+            } catch (err) {
+                log(`❌ Error: ${err.message}`);
+            }
+        }
+
+        async function checkCredit() {
+            if (!contract) return alert('Connect wallet first!');
+            const agent = document.getElementById('checkAgentAddress').value;
+            if (!agent) return alert('Enter agent address!');
+            try {
+                const remaining = await contract.getRemainingCredit(agent);
+                const resultDiv = document.getElementById('creditResult');
+                resultDiv.classList.remove('hidden');
+                resultDiv.innerHTML = `
+                    <div class="flex justify-between"><span>Remaining Credit:</span><span class="font-bold">${remaining} USDC</span></div>
+                `;
+                log(`Checked credit for ${agent}: ${remaining} USDC remaining`);
+            } catch (err) {
+                log(`❌ Error: ${err.message}`);
+            }
+        }
+
+        async function revokeAuthority() {
+            if (!contract) return alert('Connect wallet first!');
+            const agent = document.getElementById('revokeAgentAddress').value;
+            if (!agent) return alert('Enter agent address!');
+            try {
+                const tx = await contract.revokeAuthority(agent);
+                log(`Revoking authority for ${agent}...`);
+                await tx.wait();
+                log(`✅ Authority revoked!`);
+            } catch (err) {
+                log(`❌ Error: ${err.message}`);
+            }
+        }
+
+        function log(msg) {
+            const logEl = document.getElementById('txLog');
+            const time = new Date().toLocaleTimeString();
+            logEl.innerHTML = `<div class="text-sm"><span class="text-gray-500">[${time}]</span> ${msg}</div>` + logEl.innerHTML;
+        }
+    </script>
+</body>
+</html>
