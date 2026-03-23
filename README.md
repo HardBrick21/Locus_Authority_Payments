@@ -74,6 +74,26 @@ await contract.executePayment(
 );
 ```
 
+## 🌐 Live Demo
+
+**GitHub Pages**: [https://hardbrick21.github.io/Locus-Authority-Payments/](https://hardbrick21.github.io/Locus-Authority-Payments/)
+
+### Demo Features
+
+The live demo allows you to:
+- 🔗 **Connect Wallet** - Connect your MetaMask wallet to Base Sepolia
+- 📝 **Grant Authority** - Grant authority with USDC credit limits
+- 💳 **Authorize Payment** - Authorize USDC payments
+- 🔍 **Check Credit** - View remaining credit for an agent
+- ⚠️ **Revoke Authority** - Revoke agent authority
+
+### How to Use the Demo
+
+1. Open the [demo page](https://hardbrick21.github.io/Locus-Authority-Payments/)
+2. Click "Connect Wallet" and approve the connection
+3. Use the forms to interact with the smart contract
+4. View transaction logs in real-time
+
 ---
 
 *Authority Ledger + Locus = Real-world agent payments.*
