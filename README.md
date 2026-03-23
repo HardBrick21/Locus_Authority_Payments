@@ -1,6 +1,19 @@
 # Locus Authority Payments
 
-> Authority Ledger with Locus USDC payments on Base - Real-world agent payments with credit limits
+[![Synthesis Submission](https://img.shields.io/badge/Synthesis-Submit-blue?logo=gitbook)](https://synthesis.devfolio.co/projects/locus-authority-payments-xxx)
+
+Authority Ledger with Locus USDC payments on Base - Real-world agent payments with credit limits
+
+## 🏆 Synthesis Hackathon Submission
+
+- **Track**: Best Use of Locus
+- **Status**: ✅ Published
+- **Demo**: https://hardbrick21.github.io/Locus-Authority-Payments/
+- **GitHub**: https://github.com/HardBrick21/Locus-Authority-Payments
+
+## 📋 Cover Image
+
+![Locus Authority Payments Cover](https://raw.githubusercontent.com/HardBrick21/Locus-Authority-Payments/main/cover.svg)
 
 ## Overview
 
@@ -29,71 +42,59 @@ This project integrates **Locus** payment protocol with Authority Ledger, enabli
 
 ## Quick Start
 
+### Installation
+
 ```bash
-# Install dependencies
 npm install
+```
 
-# Compile
+### Compile
+
+```bash
 npx hardhat compile
-
-# Deploy to Base Sepolia
-npx hardhat run scripts/deploy.js --network base-sepolia
 ```
 
-## Usage
+### Test
 
-### Grant Authority with Credit
-
-```javascript
-// Grant EXECUTE level with 100 USDC credit limit
-await contract.grantAuthorityWithCredit(
-  agentAddress,
-  3, // EXECUTE level
-  100000000, // 100 USDC (6 decimals)
-  86400 // 24 hours
-);
+```bash
+npx hardhat test
 ```
 
-### Authorize Payment
+### Deploy
 
-```javascript
-// Agent authorizes a payment
-await contract.authorizePayment(
-  recipientAddress,
-  1000000 // 1 USDC
-);
+```bash
+npx hardhat run scripts/deploy.js --network <network>
 ```
 
-### Execute Payment
+## 🛠️ Tech Stack
 
-```javascript
-// Owner executes the payment
-await contract.executePayment(
-  paymentId,
-  authorityRef
-);
-```
+- Solidity
+- Hardhat
+- Locus Protocol
+- USDC (Base)
 
-## 🌐 Live Demo
+## 📁 Project Structure
 
-**GitHub Pages**: [https://hardbrick21.github.io/Locus-Authority-Payments/](https://hardbrick21.github.io/Locus-Authority-Payments/)
+- `contracts/` - Smart contracts
+- `frontend/` - Frontend application
+- `scripts/` - Deployment scripts
+- `test/` - Test files
 
-### Demo Features
+## 📖 Documentation
 
-The live demo allows you to:
-- 🔗 **Connect Wallet** - Connect your MetaMask wallet to Base Sepolia
-- 📝 **Grant Authority** - Grant authority with USDC credit limits
-- 💳 **Authorize Payment** - Authorize USDC payments
-- 🔍 **Check Credit** - View remaining credit for an agent
-- ⚠️ **Revoke Authority** - Revoke agent authority
+- [AGENTS.md](./AGENTS.md) - Agent documentation
 
-### How to Use the Demo
+## 🤝 Team
 
-1. Open the [demo page](https://hardbrick21.github.io/Locus-Authority-Payments/)
-2. Click "Connect Wallet" and approve the connection
-3. Use the forms to interact with the smart contract
-4. View transaction logs in real-time
+- **AI Agent**: Brick Locus
+- **Human**: hardbrick
+
+## 📅 Timeline
+
+- Started: March 18, 2026
+- Submitted: March 22, 2026
+- Published: March 22, 2026
 
 ---
 
-*Authority Ledger + Locus = Real-world agent payments.*
+*Built with OpenClaw Agent Platform*
